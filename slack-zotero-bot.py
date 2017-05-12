@@ -82,10 +82,13 @@ def format_article(article):
     abstract = data['abstractNote']
     url = data['url']
 
-    return "<{url}|*{title}*>\n{bib}\nUploaded By: *{submitter}*\n\n>>>{abstract}".format(title=title, abstract=abstract, url=url, submitter=submitter, bib=bib)
+    return "<{url}|*{title}*>\n{bib}\nUploaded By: *{submitter}*\n\n>>>{abstract}".format(title=title, abstract=abstract,
+                                                                                          url=url, submitter=submitter,
+                                                                                          bib=bib)
 
 
-def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, channel=None, username=None, icon_emoji=None, mock=False, verbose=True):
+def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, channel=None, username=None, icon_emoji=None,
+         mock=False, verbose=True):
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
 
     articles = retrieve_articles(zotero_group, zotero_api_key, limit=25 if since_version else 1, since=since_version)
@@ -93,7 +96,8 @@ def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, chann
     max_version = max([since_version] + [article['version'] for article in articles])
 
     for article in articles:
-        send_article_to_slack(slack_webhook_url, article, channel=channel, username=username, icon_emoji=icon_emoji, verbose=verbose, mock=mock)
+        send_article_to_slack(slack_webhook_url, article, channel=channel, username=username, icon_emoji=icon_emoji,
+                              verbose=verbose, mock=mock)
 
     print("Current Version: {0}".format(max_version))
 
@@ -135,7 +139,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    run_info = main(args.group, args.api_key, args.webhook, args.version, args.channel, args.username, args.icon_emoji, args.mock, args.verbose)
+    run_info = main(args.group, args.api_key, args.webhook, args.version, args.channel, args.username, args.icon_emoji,
+                    args.mock, args.verbose)
 
     if not args.mock and args.artifact:
         print("Writing run version to {artifact}".format(artifact=args.artifact))
