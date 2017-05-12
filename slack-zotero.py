@@ -27,7 +27,7 @@ import datetime
 
 
 def retrieve_articles(group_id, api_key, limit=1, include='data,bib', since=0):
-    '''Retrieves articles from a Zotero group API feed'''
+    """Retrieves articles from a Zotero group API feed"""
     zotero_template = "https://api.zotero.org/groups/{group_id}/items/top?start=0&limit={limit}&format=json&v=3&key={api_key}"
     zotero_url = zotero_template.format(group_id=group_id, api_key=api_key, limit=limit)
 
@@ -45,7 +45,7 @@ def retrieve_articles(group_id, api_key, limit=1, include='data,bib', since=0):
 
 
 def send_article_to_slack(webhook_url, article, channel=None, username=None, icon_emoji=None, verbose=True, mock=False):
-    '''Sends a JSON article to the given Slack Webhooks URL'''
+    """Sends a JSON article to the given Slack Webhooks URL"""
     payload = {"text": format_article(article)}
     if channel:
         payload['channel'] = channel
@@ -73,7 +73,7 @@ def send_article_to_slack(webhook_url, article, channel=None, username=None, ico
 
 
 def format_article(article):
-    '''Feel free to overwrite me with your preferred format'''
+    """Feel free to overwrite me with your preferred format"""
     submitter = article['meta']['createdByUser']['username']
 
     data = article['data']
@@ -108,7 +108,8 @@ def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, chann
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description="Retrieve most recent articles from a Zotero group using Zotero's API v3")
+    parser = argparse.ArgumentParser(description="Retrieve most recent articles from a Zotero group using Zotero's "
+                                                 "API v3 and send them to a Slack channel using Webhooks")
 
     parser.add_argument('--group', dest='group', type=int, required=True,
                         help='Zotero group ID of the library to monitor')
