@@ -91,9 +91,9 @@ def format_article(article):
         link = "https://doi.org/{0}".format(doi)
 
     template = ""
-    template += "<{link}|*{title}*>" if link else "*{title}*\n"
+    template += "<{link}|*{title}*>\n" if link else "*{title}*\n"
     template += "{bib}\n"
-    template += "{tags}\n" if tags else ""
+    template += "Tags: {tags}\n" if tags else ""
     template += "Uploaded By: *{submitter}*\n\n"
 
     template += ">>>{abstract}"
