@@ -147,8 +147,7 @@ if __name__ == '__main__':
                 data = json.load(data_file)
                 since = data['version']
         except (FileNotFoundError, KeyError) as e:
-            print("Error reading version info from artifact file.")
-            raise
+            print("Error reading version info from artifact file, defaulting to {0}.".format(since))
 
     run_info = main(args.group, args.api_key, args.webhook, since, args.channel, args.username, args.icon_emoji,
                     args.mock, args.verbose)
