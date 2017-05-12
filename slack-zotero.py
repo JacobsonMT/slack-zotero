@@ -6,15 +6,15 @@
    run this script with since=`last run's version` which can be
    obtained using the artifact parameter's functionality
 
-   Example: slack-zotero-bot.py --group 12345 \
-                                --api "kjas734890fnlkjafFJnadsf" \
-                                --webhook "https://hooks.slack.com/services/OUHAEFNF/OUIHAQEUN/uihsdf786SHBF6ebSF" \
-                                --since 9043 \
-                                --channel "#test" \
-                                --username "Zotero Bot" \
-                                --icon ":cow:" \
-                                --artifact "slack-zotero-bot-previous.json" \
-                                -v
+   Example: slack-zotero.py --group 12345 \
+                            --api "kjas734890fnlkjafFJnadsf" \
+                            --webhook "https://hooks.slack.com/services/OUHAEFNF/OUIHAQEUN/uihsdf786SHBF6ebSF" \
+                            --since 9043 \
+                            --channel "#test" \
+                            --username "Zotero Bot" \
+                            --icon ":cow:" \
+                            --artifact "slack-zotero-bot-previous.json" \
+                            -v
 """
 
 import urllib.request
