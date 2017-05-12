@@ -80,11 +80,25 @@ def format_article(article):
     title = data['title']
     bib = html.unescape(re.sub("</?(div|i).*?>|\n", " ", article['bib']).strip())
     abstract = data['abstractNote']
-    url = data['url']
+    url = data['url'].strip()
+    doi = data['DOI']
+    tags = [t['tag'] for t in data['tags']]
 
-    return "<{url}|*{title}*>\n{bib}\nUploaded By: *{submitter}*\n\n>>>{abstract}".format(title=title, abstract=abstract,
-                                                                                          url=url, submitter=submitter,
-                                                                                          bib=bib)
+    link = ""
+    if not doi and url:
+        link = url
+    elif doi:
+        link = "https://doi.org/{0}".format(doi)
+
+    template = ""
+    template += "<{link}|*{title}*>" if link else "*{title}*\n"
+    template += "{bib}\n"
+    template += "{tags}\n" if tags else ""
+    template += "Uploaded By: *{submitter}*\n\n"
+
+    template += ">>>{abstract}"
+
+    return template.format(title=title, abstract=abstract, link=link, submitter=submitter, bib=bib, tags=", ".join(tags))
 
 
 def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, channel=None, username=None, icon_emoji=None,
