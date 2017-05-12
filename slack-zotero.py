@@ -130,7 +130,7 @@ if __name__ == '__main__':
                         help='Override default Slack webhooks icon')
 
     parser.add_argument('--artifact', dest='artifact', type=str, required=False, default=None,
-                        help='File to write the most recent article version')
+                        help='Retrieve --since from & write run info to this file. OVERRIDES --since')
 
     parser.add_argument('--mock', dest='mock', action='store_true',
                         help='Mock run; will not write to Slack or filesystem')
@@ -140,7 +140,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    run_info = main(args.group, args.api_key, args.webhook, args.version, args.channel, args.username, args.icon_emoji,
+    since = args.version
+    if args.artifact:
+        try:
+            with open(args.artifact) as data_file:
+                data = json.load(data_file)
+                since = data['version']
+        except (FileNotFoundError, KeyError) as e:
+            print("Error reading version info from artifact file.")
+            raise
+
+    run_info = main(args.group, args.api_key, args.webhook, since, args.channel, args.username, args.icon_emoji,
                     args.mock, args.verbose)
 
     if not args.mock and args.artifact:
