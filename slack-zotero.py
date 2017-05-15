@@ -80,6 +80,14 @@ def format_article(article):
     title = data['title']
     bib = html.unescape(re.sub("</?(div|i).*?>|\n", " ", article['bib']).strip())
     abstract = data['abstractNote']
+    if abstract:
+        # Extract first N words
+        word_cnt = 25
+        abstract_words = abstract.split(" ")
+        abstract = " ".join(abstract_words[:word_cnt])
+        if len(abstract_words) > word_cnt:
+            abstract += " …"
+
     url = data['url'].strip()
     doi = data['DOI']
     tags = [t['tag'] for t in data['tags']]
