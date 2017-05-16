@@ -26,7 +26,7 @@ import time
 import datetime
 
 
-def retrieve_articles(group_id, api_key, limit=1, include='data,bib', since=0):
+def retrieve_articles(group_id, api_key, limit=1, include='data', since=0):
     """Retrieves articles from a Zotero group API feed"""
     zotero_template = "https://api.zotero.org/groups/{group_id}/items/top?start=0&limit={limit}&format=json&v=3&key={api_key}"
     zotero_url = zotero_template.format(group_id=group_id, api_key=api_key, limit=limit)
@@ -78,11 +78,12 @@ def format_article(article):
 
     data = article['data']
     title = data['title']
-    bib = html.unescape(re.sub("</?(div|i).*?>|\n", " ", article['bib']).strip())
+    citation = "{authors}. _{journal}_ {date}".format(date=data["date"], journal=data["publicationTitle"],
+                                                      authors=article["meta"]["creatorSummary"].rstrip("."))
     abstract = data['abstractNote']
     if abstract:
         # Extract first N words
-        word_cnt = 25
+        word_cnt = 100
         abstract_words = abstract.split(" ")
         abstract = " ".join(abstract_words[:word_cnt])
         if len(abstract_words) > word_cnt:
@@ -100,13 +101,14 @@ def format_article(article):
 
     template = ""
     template += "<{link}|*{title}*>\n" if link else "*{title}*\n"
-    template += "{bib}\n"
-    template += "Tags: {tags}\n" if tags else ""
-    template += "Uploaded By: *{submitter}*\n\n"
+    template += "*Citation:* {citation}\n"
+    template += "*Tags:* {tags}\n" if tags else ""
+    template += "*Added By:* {submitter}\n\n"
 
-    template += ">>>{abstract}"
+    template += "*Abstract:*\n```{abstract}```" if abstract else ""
 
-    return template.format(title=title, abstract=abstract, link=link, submitter=submitter, bib=bib, tags=", ".join(tags))
+    return template.format(title=title, abstract=abstract, link=link, submitter=submitter,
+                           citation=citation, tags=", ".join(tags))
 
 
 def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, channel=None, username=None, icon_emoji=None,
