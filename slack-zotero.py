@@ -92,7 +92,7 @@ def format_article(article):
             abstract += " …"
 
     url = data['url'].strip()
-    doi = data['DOI']
+    doi = data['DOI'] if "DOI" in data else ""
     tags = [t['tag'] for t in data['tags']]
 
     link = ""
