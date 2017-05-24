@@ -120,7 +120,7 @@ def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, chann
     max_version = max([since_version] + [article['version'] for article in articles])
 
     skipped = 0
-    for article in articles:
+    for article in reversed(articles):
         try:
             send_article_to_slack(slack_webhook_url, article, channel=channel, username=username, icon_emoji=icon_emoji,
                                   verbose=verbose, mock=mock)
