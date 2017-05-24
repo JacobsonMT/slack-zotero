@@ -24,6 +24,7 @@ import re
 import html
 import time
 import datetime
+import sys
 
 
 def retrieve_articles(group_id, api_key, limit=1, include='data', since=0):
