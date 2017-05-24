@@ -119,13 +119,18 @@ def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, chann
 
     max_version = max([since_version] + [article['version'] for article in articles])
 
+    skipped = 0
     for article in articles:
-        send_article_to_slack(slack_webhook_url, article, channel=channel, username=username, icon_emoji=icon_emoji,
-                              verbose=verbose, mock=mock)
+        try:
+            send_article_to_slack(slack_webhook_url, article, channel=channel, username=username, icon_emoji=icon_emoji,
+                                  verbose=verbose, mock=mock)
+        except Exception as inst:
+            skipped += 1
+            print("Problem Sending article {key}: {error}".format(key=article['key'], error=inst))
 
     print("Current Version: {0}".format(max_version))
 
-    run_info = {"time": timestamp, "version": max_version, "articles_cnt": len(articles)}
+    run_info = {"time": timestamp, "version": max_version, "articles_cnt": len(articles), "skipped": skipped}
 
     return run_info
 
@@ -180,3 +185,7 @@ if __name__ == '__main__':
         print("Writing run version to {artifact}".format(artifact=args.artifact))
         with open(args.artifact, 'w') as outfile:
             json.dump(run_info, outfile)
+
+    if run_info['skipped']:
+        # Articles were skipped, warn cron-like process by exiting with 2
+        sys.exit(2)
