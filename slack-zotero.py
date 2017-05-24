@@ -112,10 +112,10 @@ def format_article(article):
 
 
 def main(zotero_group, zotero_api_key, slack_webhook_url, since_version=0, channel=None, username=None, icon_emoji=None,
-         mock=False, verbose=True):
+         limit=25, mock=False, verbose=True):
     timestamp = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
 
-    articles = retrieve_articles(zotero_group, zotero_api_key, limit=25 if since_version else 1, since=since_version)
+    articles = retrieve_articles(zotero_group, zotero_api_key, limit=limit if since_version else 1, since=since_version)
 
     max_version = max([since_version] + [article['version'] for article in articles])
 
@@ -151,6 +151,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--since', dest='version', type=int, required=False, default=0,
                         help='Retrieve only articles created after this version')
+    parser.add_argument('--limit', dest='limit', type=int, required=False, default=25,
+                        help='Max articles to return when --since is supplied')
     parser.add_argument('--channel', dest='channel', type=str, required=False, default=None,
                         help='Override default Slack webhooks channel')
     parser.add_argument('--username', dest='username', type=str, required=False, default=None,
@@ -179,7 +181,7 @@ if __name__ == '__main__':
             print("Error reading version info from artifact file, defaulting to {0}.".format(since))
 
     run_info = main(args.group, args.api_key, args.webhook, since, args.channel, args.username, args.icon_emoji,
-                    args.mock, args.verbose)
+                    args.limit, args.mock, args.verbose)
 
     if not args.mock and args.artifact:
         print("Writing run version to {artifact}".format(artifact=args.artifact))
