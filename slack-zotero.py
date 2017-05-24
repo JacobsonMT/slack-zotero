@@ -79,7 +79,8 @@ def format_article(article):
 
     data = article['data']
     title = data['title']
-    citation = "{authors}. _{journal}_ {date}".format(date=data["date"], journal=data["publicationTitle"],
+    journal = data["university"] if data['itemType'] == "thesis" else data["publicationTitle"]
+    citation = "{authors}. _{journal}_ {date}".format(date=data["date"], journal=journal,
                                                       authors=article["meta"]["creatorSummary"].rstrip("."))
     abstract = data['abstractNote']
     if abstract:
