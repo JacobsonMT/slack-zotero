@@ -75,14 +75,27 @@ def send_article_to_slack(webhook_url, article, channel=None, username=None, ico
 
 def format_article(article):
     """Feel free to overwrite me with your preferred format"""
-    submitter = article['meta']['createdByUser']['username']
-
     data = article['data']
+    meta = article['meta']
+
     title = data['title']
-    journal = data["university"] if data['itemType'] == "thesis" else data["publicationTitle"]
-    citation = "{authors}. _{journal}_ {date}".format(date=data["date"], journal=journal,
-                                                      authors=article["meta"]["creatorSummary"].rstrip("."))
-    abstract = data['abstractNote']
+
+    submitter = meta.get('createdByUser', {}).get('username', '')
+
+    itemType = data.get('itemType', '')
+    if itemType == "thesis":
+        journal = data.get('university', '')
+    else:
+        journal = data.get('publicationTitle', '')
+
+    authors = meta.get('creatorSummary', '').rstrip(".")
+    date = data.get('date', '')
+    if date or journal or authors:
+        citation = "{authors}. _{journal}_ {date}".format(date=date, journal=journal, authors=authors)
+    else:
+        ctation = ""
+
+    abstract = data.get('abstractNote', '')
     if abstract:
         # Extract first N words
         word_cnt = 100
@@ -91,9 +104,9 @@ def format_article(article):
         if len(abstract_words) > word_cnt:
             abstract += " …"
 
-    url = data['url'].strip()
-    doi = data['DOI'] if "DOI" in data else ""
-    tags = [t['tag'] for t in data['tags']]
+    url = data.get('url', '').strip()
+    doi = data.get('DOI', '')
+    tags = [t['tag'] for t in data.get('tags', '')]
 
     link = ""
     if not doi and url:
@@ -103,11 +116,11 @@ def format_article(article):
 
     template = ""
     template += "<{link}|*{title}*>\n" if link else "*{title}*\n"
-    template += "*Citation:* {citation}\n"
+    template += "*Citation:* {citation}\n" if citation else ""
     template += "*Tags:* {tags}\n" if tags else ""
-    template += "*Added By:* {submitter}\n\n"
+    template += "*Added By:* {submitter}\n" if submitter else ""
 
-    template += "*Abstract:*\n```{abstract}```" if abstract else ""
+    template += "\n*Abstract:*\n```{abstract}```" if abstract else ""
 
     return template.format(title=title, abstract=abstract, link=link, submitter=submitter,
                            citation=citation, tags=", ".join(tags))
@@ -142,13 +155,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Retrieve most recent articles from a Zotero group using Zotero's "
                                                  "API v3 and send them to a Slack channel using Webhooks")
 
-    parser.add_argument('--group', dest='group', type=int, required=True,
+    parser.add_argument('--group', dest='group', type=int, required=False,
                         help='Zotero group ID of the library to monitor')
 
-    parser.add_argument('--api', dest='api_key', type=str, required=True,
+    parser.add_argument('--api', dest='api_key', type=str, required=False,
                         help='Zotero API key with access to the library')
 
-    parser.add_argument('--webhook', dest='webhook', type=str, required=True,
+    parser.add_argument('--webhook', dest='webhook', type=str, required=False,
                         help='Slack webhook URL to send articles')
 
     parser.add_argument('--since', dest='version', type=int, required=False, default=0,
@@ -171,6 +184,9 @@ if __name__ == '__main__':
     parser.add_argument('-v', dest='verbose', action='store_true',
                         help='More verbose logging')
 
+    parser.add_argument('--test', dest='test', type=str, required=False, default=None,
+                        help='Test output using JSON file, will not write to Slack or filesystem')
+
     args = parser.parse_args()
 
     since = args.version
@@ -182,10 +198,34 @@ if __name__ == '__main__':
         except (FileNotFoundError, KeyError) as e:
             print("Error reading version info from artifact file, defaulting to {0}.".format(since))
 
+    if args.test:
+        # Monkey patching
+
+        # Just in case
+        args.mock = True
+
+        try:
+            with open(args.test) as data_file:
+                articles = json.load(data_file)
+        except (FileNotFoundError, KeyError) as e:
+            print("Error reading test file.")
+            articles = []
+
+        def mocked_retrieve(*args, **kwargs):
+            return articles
+
+        retrieve_articles = mocked_retrieve
+
+        def mocked_send(*args, **kwargs):
+            print(format_article(args[1]))
+            print("-------------------")
+
+        send_article_to_slack = mocked_send
+
     run_info = main(args.group, args.api_key, args.webhook, since, args.channel, args.username, args.icon_emoji,
                     args.limit, args.mock, args.verbose)
 
-    if not args.mock and args.artifact:
+    if not args.mock and not args.test and args.artifact:
         print("Writing run version to {artifact}".format(artifact=args.artifact))
         with open(args.artifact, 'w') as outfile:
             json.dump(run_info, outfile)
