@@ -93,7 +93,7 @@ def format_article(article):
     if date or journal or authors:
         citation = "{authors}. _{journal}_ {date}".format(date=date, journal=journal, authors=authors)
     else:
-        ctation = ""
+        citation = ""
 
     abstract = data.get('abstractNote', '')
     if abstract:
