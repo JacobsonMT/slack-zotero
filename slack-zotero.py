@@ -90,10 +90,12 @@ def format_article(article):
 
     authors = meta.get('creatorSummary', '').rstrip(".")
     date = data.get('date', '')
-    if date or journal or authors:
-        citation = "{authors}. _{journal}_ {date}".format(date=date, journal=journal, authors=authors)
-    else:
-        citation = ""
+
+    # Build citation
+    citation = ""
+    citation += (authors + ". ") if authors else ""
+    citation += ("_" + journal + "_ ") if journal else ""
+    citation += date if date else ""
 
     abstract = data.get('abstractNote', '')
     if abstract:
