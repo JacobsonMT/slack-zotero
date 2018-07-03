@@ -96,6 +96,7 @@ def format_article(article):
     citation += (authors + ". ") if authors else ""
     citation += ("_" + journal + "_ ") if journal else ""
     citation += date if date else ""
+    citation = citation.strip()
 
     abstract = data.get('abstractNote', '')
     if abstract:
