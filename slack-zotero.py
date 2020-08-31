@@ -36,9 +36,10 @@ def retrieve_articles(group_id, api_key, limit=1, include='data', since=0):
     zotero_url += "&since={0}".format(since) if since else ""
 
     print("Retrieving most recent {limit} articles since version: {version}".format(limit=limit, version=since))
+    print("URL: ",zotero_url)
 
     response = urllib.request.urlopen(zotero_url)
-    articles = json.loads(response.readall().decode('utf-8'))
+    articles = json.loads(response.read().decode('utf-8'))
 
     print("Retrieved {0} articles".format(len(articles)))
 
@@ -48,8 +49,14 @@ def retrieve_articles(group_id, api_key, limit=1, include='data', since=0):
 def send_article_to_slack(webhook_url, article, channel=None, username=None, icon_emoji=None, verbose=True, mock=False):
     """Sends a JSON article to the given Slack Webhooks URL"""
     payload = {"text": format_article(article)}
+
     if channel:
         payload['channel'] = channel
+    else:
+        # kinda hard-wired by Jarv for Zulip. 
+        # channel in Zulip is the title of the thread, so we pull the title of
+        # the paper out of the Zotero data structure & use that
+        payload['channel'] = article['data']['title'] 
 
     if username:
         payload['username'] = username
